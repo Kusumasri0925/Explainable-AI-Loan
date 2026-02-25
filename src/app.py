@@ -795,25 +795,48 @@ def render_prediction_tab(model: Pipeline, df: pd.DataFrame) -> None:
         "Education": education,
         "Married": married_status,
     }
+    credit_history = 1 if credit_score > 650 else 0
+    input_payload = {
+        "Loan_ID": "LP001",
+        "Gender": "Male",
+        "Married": married_status,
+        "Dependents": "0",
+        "Education": education,
+        "Self_Employed": "No",
+        "ApplicantIncome": income,
+        "CoapplicantIncome": 0.0,
+        "LoanAmount": loan_amount,
+        "Loan_Amount_Term": 360.0,
+        "Credit_History": float(credit_history),
+        "Property_Area": "Urban",
+    }
+    baseline_credit_history = 1 if score_default > 650 else 0
     baseline_inputs = {
-        "Income": income_default,
-        "LoanAmount": loan_default,
-        "CreditScore": score_default,
-        "Education": education_options[0],
+        "Loan_ID": "LP001",
+        "Gender": "Male",
         "Married": married_options[0],
+        "Dependents": "0",
+        "Education": education_options[0],
+        "Self_Employed": "No",
+        "ApplicantIncome": income_default,
+        "CoapplicantIncome": 0.0,
+        "LoanAmount": loan_default,
+        "Loan_Amount_Term": 360.0,
+        "Credit_History": float(baseline_credit_history),
+        "Property_Area": "Urban",
     }
 
     preprocessor = model.named_steps.get("preprocessor")
     expected_features = (
         list(preprocessor.feature_names_in_)
         if preprocessor is not None and hasattr(preprocessor, "feature_names_in_")
-        else list(current_inputs.keys())
+        else list(input_payload.keys())
     )
     defaults = default_feature_values(df, expected_features)
 
     try:
         input_df, prediction, approval_prob = evaluate_profile(
-            model, df, defaults, current_inputs
+            model, df, defaults, input_payload
         )
         baseline_df, _, baseline_prob = evaluate_profile(
             model, df, defaults, baseline_inputs
@@ -879,12 +902,20 @@ def render_prediction_tab(model: Pipeline, df: pd.DataFrame) -> None:
                 key="married_b",
             )
 
+        comparison_credit_history = 1 if credit_score_b > 650 else 0
         comparison_inputs = {
-            "Income": income_b,
-            "LoanAmount": loan_amount_b,
-            "CreditScore": credit_score_b,
-            "Education": education_b,
+            "Loan_ID": "LP001",
+            "Gender": "Male",
             "Married": married_b,
+            "Dependents": "0",
+            "Education": education_b,
+            "Self_Employed": "No",
+            "ApplicantIncome": income_b,
+            "CoapplicantIncome": 0.0,
+            "LoanAmount": loan_amount_b,
+            "Loan_Amount_Term": 360.0,
+            "Credit_History": float(comparison_credit_history),
+            "Property_Area": "Urban",
         }
         try:
             comparison_input_df, comparison_prediction, comparison_prob = evaluate_profile(
