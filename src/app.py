@@ -160,8 +160,13 @@ def pick_class_shap_values(shap_values: object, class_index: int) -> np.ndarray:
 
 
 def is_approved_label(label: object) -> bool:
+    """
+    Returns True if the model label means approval.
+    Handles Y/N, 1/0, Yes/No, Approved/Rejected.
+    """
     normalized = str(label).strip().lower()
-    return normalized in {"approved", "approve", "yes", "true", "1"}
+
+    return normalized in {"y", "yes", "1", "true", "approved"}
 
 
 def get_approval_class_index(classifier: object, fallback_label: object) -> int:
@@ -530,7 +535,7 @@ def build_prediction_summary_pdf(
 
     story.append(Paragraph("Loan Prediction Summary", styles["Title"]))
     story.append(Spacer(1, 10))
-    final_decision = "Approved" if str(final_prediction).lower() == "approved" else "Rejected"
+    final_decision = "Approved" if is_approved_label(final_prediction) else "Rejected"
     story.append(Paragraph(f"Final Decision: <b>{final_decision}</b>", styles["Heading3"]))
     story.append(
         Paragraph(f"Approval Probability: <b>{approval_prob * 100:.2f}%</b>", styles["BodyText"])
@@ -890,10 +895,10 @@ def render_prediction_tab(model: Pipeline, df: pd.DataFrame) -> None:
             comparison_mode = False
     prob_delta = approval_prob - baseline_prob
 
-    if str(prediction).lower() == "approved":
-        st.success("Final Ensemble Decision: Approved")
+    if is_approved_label(prediction):
+       st.success("Final Ensemble Decision: Approved")
     else:
-        st.error("Final Ensemble Decision: Rejected")
+       st.error("Final Ensemble Decision: Rejected")
 
     st.metric(
         "Approval Probability",
@@ -926,15 +931,15 @@ def render_prediction_tab(model: Pipeline, df: pd.DataFrame) -> None:
         with left:
             st.markdown("**Profile A**")
             st.write(
-                f"Prediction: {'Approved' if str(prediction).lower() == 'approved' else 'Rejected'}"
-            )
+    f"Prediction: {'Approved' if is_approved_label(prediction) else 'Rejected'}"
+)
             st.metric("Approval Probability (A)", f"{approval_prob * 100:.2f}%")
             render_probability_gauge(approval_prob)
         with right:
             st.markdown("**Profile B**")
             st.write(
-                f"Prediction: {'Approved' if str(comparison_prediction).lower() == 'approved' else 'Rejected'}"
-            )
+    f"Prediction: {'Approved' if str(comparison_prediction).lower() == 'approved' else 'Rejected'}"
+)
             st.metric(
                 "Approval Probability (B)",
                 f"{comparison_prob * 100:.2f}%",
