@@ -1,9 +1,10 @@
+streamlit
 pandas
 numpy
 scikit-learn
 matplotlib
-shap
-streamlit
-joblib
 plotly
+shap
+joblib
 reportlab
+altair==4.2.2
