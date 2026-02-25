@@ -5,3 +5,5 @@ matplotlib
 shap
 streamlit
 joblib
+plotly
+reportlab
